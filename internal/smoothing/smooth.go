@@ -37,7 +37,7 @@ func SmoothKNN(hm *[][]uint8, k int) [][]uint8 {
 	for i := range nhm {
 		nhm[i] = make([]uint8, h)
 		for j := range nhm[i] {
-			var val uint8 = uint8(res[i][j] * 1.6) // It's a hack
+			var val uint8 = uint8(res[i][j] * (float64(k+rad+1) / float64(k))) // It's a hack
 			nhm[i][j] = uint8(val)
 		}
 	}
