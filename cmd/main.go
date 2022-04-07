@@ -1,21 +1,21 @@
 package main
 
 import (
-	"github.com/diagmatrix/gomap/internal/heightmap"
+	"fmt"
+
+	gomap "github.com/diagmatrix/gomap/internal"
 )
 
 func main() {
-	var h heightmap.HeightMap = *heightmap.NewHeightMapRN(1024, 1024)
-	heightmap.SaveHeightMap("./test/testRN.png", &h)
-	h = *heightmap.NewHeightMapDS(129, 80)
-	/*
-		for i := range h.Pix {
-			var row string = ""
-			for _, v := range h.Pix[i] {
-				row += fmt.Sprint(v) + " "
-			}
-			fmt.Println(row)
+	// 8 octaves 128 amplitude
+	for i := 1; i < 9; i++ {
+		for j := 255; j > 16; j = j / 2 {
+			fmt.Println("Octaves: ", i, "\tAmplitude: ", j)
+			h := *gomap.NewHeightMapDS(512, uint8(i), uint8(j))
+			gomap.SaveHeightMap("./test/test("+fmt.Sprint(i)+"-"+fmt.Sprint(j)+").png", &h)
+			h = *gomap.NewHeightMapDSS(512, uint8(i), uint8(j))
+			gomap.SaveHeightMap("./test/testS("+fmt.Sprint(i)+"-"+fmt.Sprint(j)+").png", &h)
 		}
-	*/
-	heightmap.SaveHeightMap("./test/testDS.png", &h)
+	}
+
 }

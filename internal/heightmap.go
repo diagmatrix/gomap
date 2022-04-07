@@ -1,4 +1,4 @@
-package heightmap
+package gomap
 
 import (
 	"image"
@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/diagmatrix/gomap/internal/generator"
 )
 
 // ----------------------------------------------------------------------------
@@ -35,13 +37,13 @@ func (h *HeightMap) ColorModel() color.Model {
 // ----------------------------------------------------------------------------
 // Heightmap generator functions
 // Random noise
-func NewHeightMapRN(w, h int) *HeightMap {
+func NewHeightMapRN(w, h, o int) *HeightMap {
 	seed()
 	matrix := make([][]uint8, w)
 	for i := range matrix {
 		matrix[i] = make([]uint8, h)
 		for j := range matrix[i] {
-			matrix[i][j] = uint8(rand.Int31n(65535))
+			matrix[i][j] = uint8(rand.Int31n(256))
 		}
 	}
 	return &HeightMap{
@@ -51,17 +53,23 @@ func NewHeightMapRN(w, h int) *HeightMap {
 }
 
 // Diamond Square (works better with h,w = 2^k)
-func NewHeightMapDS(s int, o uint8) *HeightMap {
+func NewHeightMapDS(s int, o, r uint8) *HeightMap {
 	seed()
 	// Empty matrix
 	matrix := make([][]uint8, s)
 	for i := range matrix {
 		matrix[i] = make([]uint8, s)
+		for j := range matrix[i] {
+			matrix[i][j] = uint8(rand.Int31n(256))
+		}
 	}
-	DiamondSquare(s, o, &matrix)
+	var n uint8
+	for n = 1; n < o+1; n++ {
+		matrix = generator.DiamondSquare(&matrix, s, r/n)
+	}
 	return &HeightMap{
 		Pix:  matrix,
-		Rect: image.Rect(0, 0, s, s),
+		Rect: image.Rect(0, 0, len(matrix), len(matrix)),
 	}
 }
 
