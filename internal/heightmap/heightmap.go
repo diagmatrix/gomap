@@ -1,4 +1,4 @@
-package gomap
+package heightmap
 
 import (
 	"image"
@@ -7,19 +7,15 @@ import (
 	"math/rand"
 	"os"
 	"time"
-
-	"github.com/diagmatrix/gomap/internal/pnoise"
 )
 
+// ----------------------------------------------------------------------------
 // Heightmap
 type HeightMap struct {
 	Pix  [][]uint8       // Map
 	Rect image.Rectangle // Bounds
 }
 
-var _time float64 = 0
-
-// ----------------------------------------------------------------------------
 // Image interface functions
 func (h *HeightMap) At(x, y int) color.Color {
 	out := x < h.Rect.Min.X || x >= h.Rect.Dx() || y < h.Rect.Min.Y || y >= h.Rect.Dy()
@@ -29,17 +25,16 @@ func (h *HeightMap) At(x, y int) color.Color {
 		return color.Gray{uint8(h.Pix[x][y])}
 	}
 }
-
 func (h *HeightMap) Bounds() image.Rectangle {
 	return h.Rect
 }
-
 func (h *HeightMap) ColorModel() color.Model {
 	return color.GrayModel
 }
 
 // ----------------------------------------------------------------------------
 // Heightmap generator functions
+// Random noise
 func NewHeightMapRN(w, h int) *HeightMap {
 	seed()
 	matrix := make([][]uint8, w)
@@ -55,24 +50,24 @@ func NewHeightMapRN(w, h int) *HeightMap {
 	}
 }
 
-func NewHeightMapPN(w, h int, a, b float64, o int32, src rand.Source) *HeightMap {
-	nm, min, max := pnoise.NoiseMap(w, h, a, b, o, src)
-	matrix := make([][]uint8, w)
-	for i := 0; i < w; i++ {
-		matrix[i] = make([]uint8, h)
-		for j := 0; j < h; j++ {
-			matrix[i][j] = toGrayscale(nm[i][j], min, max)
-		}
+// Diamond Square (works better with h,w = 2^k)
+func NewHeightMapDS(s int, o uint8) *HeightMap {
+	seed()
+	// Empty matrix
+	matrix := make([][]uint8, s)
+	for i := range matrix {
+		matrix[i] = make([]uint8, s)
 	}
-
+	DiamondSquare(s, o, &matrix)
 	return &HeightMap{
 		Pix:  matrix,
-		Rect: image.Rect(0, 0, w, h),
+		Rect: image.Rect(0, 0, s, s),
 	}
 }
 
 // ----------------------------------------------------------------------------
 // Other functions
+// Saves the heightmap
 func SaveHeightMap(s string, h *HeightMap) error {
 	f, err := os.Create(s)
 	if err != nil {
@@ -87,9 +82,8 @@ func SaveHeightMap(s string, h *HeightMap) error {
 	}
 	return nil
 }
+
+// Initializes seed
 func seed() {
 	rand.Seed(time.Now().Unix())
-}
-func toGrayscale(t, min, max float64) uint8 {
-	return uint8(((t - min) / (max - min)) * 255)
 }

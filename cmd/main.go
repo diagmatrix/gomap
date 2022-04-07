@@ -1,15 +1,21 @@
 package main
 
 import (
-	"math/rand"
-	"time"
-
-	gomap "github.com/diagmatrix/gomap/internal"
+	"github.com/diagmatrix/gomap/internal/heightmap"
 )
 
 func main() {
-	var h gomap.HeightMap = *gomap.NewHeightMapRN(1024, 1024)
-	gomap.SaveHeightMap("./test/testRN.png", &h)
-	h = *gomap.NewHeightMapPN(1024, 1024, 2, 2, 1, rand.NewSource(time.Now().Unix()))
-	gomap.SaveHeightMap("./test/testPN.png", &h)
+	var h heightmap.HeightMap = *heightmap.NewHeightMapRN(1024, 1024)
+	heightmap.SaveHeightMap("./test/testRN.png", &h)
+	h = *heightmap.NewHeightMapDS(129, 80)
+	/*
+		for i := range h.Pix {
+			var row string = ""
+			for _, v := range h.Pix[i] {
+				row += fmt.Sprint(v) + " "
+			}
+			fmt.Println(row)
+		}
+	*/
+	heightmap.SaveHeightMap("./test/testDS.png", &h)
 }
